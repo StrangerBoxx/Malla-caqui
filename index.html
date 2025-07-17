@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Malla Interactiva</title>
+  <style>
+    :root {
+      --dark-1: #363232;
+      --dark-2: #565656;
+      --dark-3: #6b6b6b;
+      --accent-1: #eea1e3;
+      --accent-2: #f4b5eb;
+      --text-color: #ffffff;
+
+      --light-bg: #fdeaf2;
+      --light-year-bg: #fbd5e5;
+      --light-subject-bg: #f7bfd8;
+      --light-title-bg: #f3aacb;
+      --light-approved: #eb9ac0;
+      --light-text: #5a2a3b;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--dark-1);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.light-mode {
+      background: var(--light-bg);
+      color: var(--light-text);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    #toggleDarkMode {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 60px;
+      height: 30px;
+      background-color: var(--accent-2);
+      border-radius: 30px;
+      border: 2px solid var(--accent-1);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      box-sizing: border-box;
+      transition: background-color 0.3s;
+      z-index: 1000;
+    }
+
+    #toggleDarkMode::before {
+      content: '';
+      width: 26px;
+      height: 26px;
+      background-color: var(--dark-1);
+      border-radius: 50%;
+      transition: transform 0.3s;
+      transform: translateX(0);
+    }
+
+    body.light-mode #toggleDarkMode {
+      background-color: var(--light-title-bg);
+    }
+
+    body.light-mode #toggleDarkMode::before {
+      background-color: var(--light-approved);
+      transform: translateX(30px);
+    }
+
+    #toggleDarkModeLabel {
+      position: absolute;
+      top: 55px;
+      right: 20px;
+      color: var(--text-color);
+      font-weight: bold;
+      font-size: 12px;
+      z-index: 1000;
+    }
+
+    body.light-mode #toggleDarkModeLabel {
+      color: var(--light-text);
+    }
+
+    #malla {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+    }
+
+    .year {
+      border-radius: 12px;
+      background: var(--dark-2);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      padding: 15px;
+      border: 2px solid var(--accent-1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background 0.3s, border 0.3s;
+    }
+
+    body.light-mode .year {
+      background: var(--light-year-bg);
+      border-color: var(--light-title-bg);
+    }
+
+    .year-title {
+      background: var(--accent-1);
+      color: var(--dark-1);
+      padding: 12px;
+      font-weight: bold;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 1.1em;
+      margin-bottom: 15px;
+      width: 100%;
+      transition: background 0.3s;
+    }
+
+    body.light-mode .year-title {
+      background: var(--light-title-bg);
+      color: var(--light-text);
+    }
+
+    .subjects {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .subject {
+      background: var(--accent-2);
+      color: var(--dark-1);
+      padding: 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: bold;
+      transition: background 0.3s, transform 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    body.light-mode .subject {
+      background: var(--light-subject-bg);
+      color: var(--light-text);
+    }
+
+    .subject:hover {
+      background: var(--accent-1);
+      transform: scale(1.03);
+    }
+
+    body.light-mode .subject:hover {
+      background: var(--light-title-bg);
+    }
+
+    .approved {
+      background-color: var(--dark-3) !important;
+      color: white;
+      text-decoration: line-through;
+    }
+
+    body.light-mode .approved {
+      background-color: var(--light-approved) !important;
+      color: var(--light-text);
+    }
+  </style>
+</head>
+<body>
+  <div id="toggleDarkMode"></div>
+  <div id="toggleDarkModeLabel">Dark Mode</div>
+  <h1>Malla Medicina 2022</h1>
+
+  <div id="malla"></div>
+
+  <script>
+    function saveProgress() {
+      const approvedSubjects = [];
+      document.querySelectorAll('.subject.approved').forEach(sub => {
+        approvedSubjects.push(sub.textContent);
+      });
+      localStorage.setItem('approvedSubjects', JSON.stringify(approvedSubjects));
+    }
+
+    function loadProgress() {
+      const savedSubjects = JSON.parse(localStorage.getItem('approvedSubjects') || '[]');
+      document.querySelectorAll('.subject').forEach(sub => {
+        if (savedSubjects.includes(sub.textContent)) {
+          sub.classList.add('approved');
+        }
+      });
+
+      const mode = localStorage.getItem('mode');
+      if (mode === 'light') {
+        document.body.classList.add('light-mode');
+        document.getElementById('toggleDarkModeLabel').textContent = 'Light Mode';
+      }
+    }
+
+    const mallaData = {
+     'Primer año': ['ICM I', 'Salud y Sociedad I', 'EFC', 'OH I', 'Electivo I'],
+      'Segundo año': ['ICM II', 'Salud y Sociedad II', 'Patogenos y defensas', 'OH II', 'Electivo 2', 'Electivo 3'],
+      'Tercer año': ['Metodologia de la investigacion', 'Semiologia', 'Hematologia', 'Dermatologia', 'Traumatologia', 'Endocrinologia', 'Ginecologia', 'Cirugia'],
+      'Cuarto año': ['Respiratorio', 'Otorrinolaringologia', 'Cardiologia', 'Gastroenterología', 'Oftalmologia', 'Urologia y nefrologia', 'Neurologia'],
+      'Quinto año': ['Clinica salud familiar', 'Clinica de la mujer', 'Clinica del niño y del adolescente', 'Clinica del adulto y del adulto mayor', 'Clinica de salud mental', 'Clinica del soporte vital avanzado', 'Gestion en salud', 'Medicina legal'],
+      'Sexto año': ['Medicina interna', 'Cirugia general', 'Int. Traumatologia', 'Internado electivo 1', 'Internado electivo 2'],
+      'Septimo año': ['Int. Ginecologia', 'Pediatria', 'Salud mental', 'Internado electivo 3', 'Internado en APS']
+    };
+
+    const container = document.getElementById('malla');
+
+    for (const [year, subjects] of Object.entries(mallaData)) {
+      const yearDiv = document.createElement('div');
+      yearDiv.className = 'year';
+
+      const yearTitle = document.createElement('div');
+      yearTitle.className = 'year-title';
+      yearTitle.textContent = year;
+
+      const subjectsDiv = document.createElement('div');
+      subjectsDiv.className = 'subjects';
+
+      subjects.forEach(subject => {
+        const subjectDiv = document.createElement('div');
+        subjectDiv.className = 'subject';
+        subjectDiv.textContent = subject;
+
+        subjectDiv.addEventListener('click', () => {
+          subjectDiv.classList.toggle('approved');
+          saveProgress();
+        });
+
+        subjectsDiv.appendChild(subjectDiv);
+      });
+
+      yearDiv.appendChild(yearTitle);
+      yearDiv.appendChild(subjectsDiv);
+      container.appendChild(yearDiv);
+    }
+
+    loadProgress();
+
+    const toggleButton = document.getElementById('toggleDarkMode');
+    const toggleLabel = document.getElementById('toggleDarkModeLabel');
+
+    toggleButton.addEventListener('click', () => {
+      document.body.classList.toggle('light-mode');
+      const isLight = document.body.classList.contains('light-mode');
+      toggleLabel.textContent = isLight ? 'Light Mode' : 'Dark Mode';
+      localStorage.setItem('mode', isLight ? 'light' : 'dark');
+    });
+  </script>
+  <footer style="text-align:center; margin-top: 40px; font-size: 0.9em; color: gray;">
+    &copy; 2025 Malla Interactiva para la mas caqui te amo.
+  </footer>
+</body>
+</html>
